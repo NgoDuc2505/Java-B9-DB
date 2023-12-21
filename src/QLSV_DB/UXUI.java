@@ -31,6 +31,8 @@ public class UXUI {
     private static JComboBox selection;
 
     private static Connection connection;
+
+    private static EditBoxProperties editUI;
     private static void renderBtn(){
         for (int i = 0; i < btnContent.length; i++) {
             btnList.add(new JButton(btnContent[i]));
@@ -93,6 +95,7 @@ public class UXUI {
         }
     }
 
+
     private static void addStudentToDB(Student stu){
         try{
             String[] departmentSplit = stu.getDepartment().toString().split("\\|");
@@ -107,47 +110,83 @@ public class UXUI {
         }
     }
 
-    private static void runUIEdit(){
+    private static String[] castArrayID(){
+        List<String> listId = new ArrayList<>();
+        List<Object[]> listStu = MStudent.getData();
+        for (int i = 0; i < listStu.size(); i++) {
+            listId.add(listStu.get(i)[0].toString());
+        }
+        return listId.toArray(new String[0]);
+    }
+
+
+    private static EditBoxProperties runUIEdit(){
         JFrame frm2 = new JFrame("Edit student !");
         frm2.setDefaultCloseOperation(1);
         frm2.setSize(300,220);
         frm2.setLocation(300,400);
-        String[] listIdTest = {"svo1","sv02"};
+        String[] listId =castArrayID();
         JLabel titleEdit = new JLabel("Edit form");
-        JTextField getId = new JTextField("id");
-        JComboBox listID = new JComboBox(listIdTest);
+        titleEdit.setFont(new Font("Arial",Font.BOLD,26));
+        titleEdit.setForeground(Color.RED);
+        JPanel titleCenter = new JPanel(new GridBagLayout());
+        titleCenter.add(titleEdit);
+        JTextField getId = new JTextField();
+        JComboBox listID = new JComboBox(listId);
         JPanel idPanel = new JPanel(new GridLayout(1,2));
         idPanel.add(getId);
         idPanel.add(listID);
+        JLabel idInputlbl = new JLabel("Id search");
+        JPanel idPanelContainer = new JPanel(new GridLayout(1,2));
+        idPanelContainer.add(idInputlbl);
+        idPanelContainer.add(idPanel);
         JLabel newNameLabel = new JLabel("newName");
         JTextField newName = new JTextField();
         JPanel panelName = new JPanel(new GridLayout(1,2));
         panelName.add(newNameLabel);
         panelName.add(newName);
 
-        JComboBox newDepart = new JComboBox(listIdTest);
+        JComboBox newDepart = new JComboBox(major);
         JButton okBtn = new JButton("Ok");
         JButton cancelBtnEdit = new JButton("Cancel");
         JPanel panelBtn = new JPanel(new GridLayout(1,2));
         panelBtn.add(okBtn);
         panelBtn.add(cancelBtnEdit);
         frm2.setLayout(new GridLayout(5,1));
-        frm2.add(titleEdit);
-        frm2.add(idPanel);
+        frm2.add(titleCenter);
+        frm2.add(idPanelContainer);
         frm2.add(panelName);
         frm2.add(newDepart);
         frm2.add(panelBtn);
         frm2.setVisible(true);
+        return new EditBoxProperties(frm2,getId,newName,listID,newDepart,okBtn,cancelBtnEdit);
     }
 
     private static void editStudentOnclick(){
         btnList.get(1).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("checkk");
-                runUIEdit();
+                editUI = runUIEdit();
+                editUIClickOk();
+                editUIClickCancel();
+            }
+        });
+    }
 
+    private static void editUIClickOk(){
+        editUI.getOkBtn().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("okeoekeoekoek");
+            }
+        });
+    }
 
+    private static void editUIClickCancel(){
+        editUI.getCancelBtn().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("cancellllllll");
             }
         });
     }
