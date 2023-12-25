@@ -1,13 +1,15 @@
 package QLSV_DB;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
-import java.text.Format;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.sql.*;
 
@@ -33,6 +35,8 @@ public class UXUI {
     private static Connection connection;
 
     private static EditBoxProperties editUI;
+
+
     private static void renderBtn(){
         for (int i = 0; i < btnContent.length; i++) {
             btnList.add(new JButton(btnContent[i]));
@@ -119,6 +123,17 @@ public class UXUI {
         return listId.toArray(new String[0]);
     }
 
+    private static String[] castArrayID(String Id){
+        List<String> listId = new ArrayList<>();
+        List<Object[]> listStu = MStudent.getData();
+        for (int i = 0; i < listStu.size(); i++) {
+            if(listStu.get(i)[0].toString().contains(Id)){
+                listId.add(listStu.get(i)[0].toString());
+            }
+        }
+        return listId.toArray(new String[0]);
+    }
+
 
     private static EditBoxProperties runUIEdit(){
         JFrame frm2 = new JFrame("Edit student !");
@@ -162,6 +177,20 @@ public class UXUI {
         return new EditBoxProperties(frm2,getId,newName,listID,newDepart,okBtn,cancelBtnEdit);
     }
 
+    private static void onInputIDsearch(){
+        String id = editUI.getIdInput().getText();
+        System.out.println("ID on insert: "+id);
+        String[] listId = castArrayID(id);
+        System.out.println(Arrays.toString(listId));
+        editUI.getListOfFindID().removeAllItems();
+        for (int i = 0; i < listId.length; i++) {
+            editUI.getListOfFindID().addItem(new ComboItem(listId[i],"test"));
+        }
+        if(listId.length == 0){
+            editUI.getListOfFindID().addItem(new ComboItem("Not found","test"));
+        }
+    }
+
     private static void editStudentOnclick(){
         btnList.get(1).addActionListener(new ActionListener() {
             @Override
@@ -169,15 +198,70 @@ public class UXUI {
                 editUI = runUIEdit();
                 editUIClickOk();
                 editUIClickCancel();
+                editUIonInputID();
             }
         });
+    }
+
+
+
+    private static void editUIonInputID(){
+        editUI.getIdInput().getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                onInputIDsearch();
+
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                onInputIDsearch();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                System.out.println("Not available !");
+            }
+        });
+    }
+
+    private  static Student findStuByID(String Id){
+        List<Object[]> currentStu = MStudent.getData();
+        for (int i = 0; i < currentStu.size(); i++) {
+            if(currentStu.get(i)[0].toString().equalsIgnoreCase(Id)){
+                return new Student(
+                        currentStu.get(i)[0].toString(),
+                        currentStu.get(i)[1].toString(),
+                        currentStu.get(i)[2].toString()
+                );
+            }
+        }
+        //Validation
+        return new Student("Und","Und","Und");
+    }
+
+    private static void setSelectionBox(String caseString){
+        for (int i = 0; i < major.length; i++) {
+            String currentPattern = major[i].split("\\|")[1];
+            if(currentPattern.equalsIgnoreCase(caseString)){
+                editUI.getListOfMajor().setSelectedIndex(i);
+            }
+        }
     }
 
     private static void editUIClickOk(){
         editUI.getOkBtn().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("okeoekeoekoek");
+                JComboBox comboBox = editUI.getListOfFindID();
+                Object currentID = comboBox.getSelectedItem();
+                if(!currentID.toString().equals("Not found")){
+                    Student currentStu  = findStuByID(currentID.toString());
+                    editUI.getNameInput().setText(currentStu.getNameStu());
+                    setSelectionBox(currentStu.getDepartment());
+                }else {
+                    System.out.println("Validation");
+                }
             }
         });
     }
@@ -279,7 +363,6 @@ public class UXUI {
         getDataFRomDB();
         addOnClick();
         editStudentOnclick();
-
     }
 
     public static void main(String[] args) {
