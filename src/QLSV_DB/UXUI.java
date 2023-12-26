@@ -14,11 +14,11 @@ import java.util.List;
 import java.sql.*;
 
 public class UXUI {
-    private static String[] btnContent = {"Add","Edit","Delete","Search","Clear","Cancel"};
+    private final static String[] btnContent = {"Add","Edit","Delete","Search","Clear","Cancel"};
 
-    private static List<JButton> btnList = new ArrayList<>();
+    private final static List<JButton> btnList = new ArrayList<>();
 
-    private static String[] labelContent = {"StudentID","Name","Department"};
+    private final static String[] labelContent = {"StudentID","Name","Department"};
 
     private static  String[] major = { "Khoa hoc may tinh", "Ky thuat may tinh", "Bao mat thong tin",
             "Vi mach", "He thong IOT" };
@@ -65,7 +65,14 @@ public class UXUI {
     }
 
     private static void setDefaultInput(){
+        tfId.setText("");
+        tfName.setText("");
+        selection.setSelectedIndex(0);
+    }
 
+    private static void setDefaultEditBox(){
+        editUI.getNameInput().setText("");
+        editUI.getListOfMajor().setSelectedIndex(0);
     }
 
     private static void connectionDB(){
@@ -105,12 +112,32 @@ public class UXUI {
             String[] departmentSplit = stu.getDepartment().toString().split("\\|");
             String departmentId = departmentSplit[0];
             stu.setDepartment(departmentSplit[1]);
+            //Validation
             String query2 = String.format("INSERT INTO Sinhvien(MaSV,FullName,MaKhoa) VALUES ('%s','%s','%s');",stu.getStuId(),stu.getNameStu(),departmentId);
             statement.executeUpdate(query2);
             List<Object[]> list = MStudent.addNew(stu);
             renderData(list);
+            setDefaultInput();
         }catch (SQLException e){
             System.out.println("Add error!");
+        }
+    }
+
+    private static void editStudentToDB(Student stu){
+        try{
+            String[] splitDep = stu.getDepartment().split("\\|");
+            String splitIdDep = splitDep[0];
+            stu.setDepartment(splitDep[1]);
+            //Validation
+            String query =String.format(" UPDATE Sinhvien SET FullName = '%s' , MaKhoa = '%s' WHERE MaSV = '%s' ;",stu.getNameStu(),splitIdDep,stu.getStuId()) ;
+            statement.executeUpdate(query);
+            int indexStu = findStuIndexByID(stu.getStuId());
+            List<Object[]> list = MStudent.updateData(indexStu,stu);
+            renderData(list);
+            setDefaultEditBox();
+        }catch(SQLException e){
+            System.out.println(e);
+            System.out.println("Edit Error");
         }
     }
 
@@ -163,10 +190,13 @@ public class UXUI {
 
         JComboBox newDepart = new JComboBox(major);
         JButton okBtn = new JButton("Ok");
-        JButton cancelBtnEdit = new JButton("Cancel");
-        JPanel panelBtn = new JPanel(new GridLayout(1,2));
+        JButton findBtn = new JButton("Find");
+        JButton cancelBtnEdit = new JButton("Finish");
+        JPanel panelBtn = new JPanel(new GridLayout(1,3));
+        panelBtn.add(findBtn);
         panelBtn.add(okBtn);
         panelBtn.add(cancelBtnEdit);
+
         frm2.setLayout(new GridLayout(5,1));
         frm2.add(titleCenter);
         frm2.add(idPanelContainer);
@@ -174,7 +204,7 @@ public class UXUI {
         frm2.add(newDepart);
         frm2.add(panelBtn);
         frm2.setVisible(true);
-        return new EditBoxProperties(frm2,getId,newName,listID,newDepart,okBtn,cancelBtnEdit);
+        return new EditBoxProperties(frm2,getId,newName,listID,newDepart,okBtn,cancelBtnEdit,findBtn);
     }
 
     private static void onInputIDsearch(){
@@ -192,14 +222,12 @@ public class UXUI {
     }
 
     private static void editStudentOnclick(){
-        btnList.get(1).addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                editUI = runUIEdit();
-                editUIClickOk();
-                editUIClickCancel();
-                editUIonInputID();
-            }
+        btnList.get(1).addActionListener(e -> {
+            editUI = runUIEdit();
+            editUIClickOk();
+            editUIClickCancel();
+            editUIonInputID();
+            editUIclickFind();
         });
     }
 
@@ -240,6 +268,17 @@ public class UXUI {
         return new Student("Und","Und","Und");
     }
 
+    private static int findStuIndexByID(String Id){
+        List<Object[]> currentStu = MStudent.getData();
+        int index = -1;
+        for (int i = 0; i < currentStu.size(); i++) {
+            if(currentStu.get(i)[0].toString().equalsIgnoreCase(Id)){
+                index = i;
+            }
+        }
+        return index;
+    }
+
     private static void setSelectionBox(String caseString){
         for (int i = 0; i < major.length; i++) {
             String currentPattern = major[i].split("\\|")[1];
@@ -249,8 +288,8 @@ public class UXUI {
         }
     }
 
-    private static void editUIClickOk(){
-        editUI.getOkBtn().addActionListener(new ActionListener() {
+    private  static void editUIclickFind(){
+        editUI.getFindBtn().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JComboBox comboBox = editUI.getListOfFindID();
@@ -262,6 +301,19 @@ public class UXUI {
                 }else {
                     System.out.println("Validation");
                 }
+            }
+        });
+    }
+
+    private static void editUIClickOk(){
+        editUI.getOkBtn().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String newName = editUI.getNameInput().getText();
+                String curId = editUI.getListOfFindID().getSelectedItem().toString();
+                String newDep = editUI.getListOfMajor().getSelectedItem().toString();
+                System.out.println(newName+" "+newDep+" "+curId);
+                editStudentToDB(new Student(curId,newName,newDep));
             }
         });
     }

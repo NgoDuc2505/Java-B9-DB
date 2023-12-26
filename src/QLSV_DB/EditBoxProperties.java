@@ -12,9 +12,10 @@ public class EditBoxProperties {
     private JButton okBtn;
 
     private JButton cancelBtn;
+    private JButton findBtn;
 
 
-    public EditBoxProperties(JFrame frame, JTextField idInput, JTextField nameInput, JComboBox listOfFindID, JComboBox listOfMajor, JButton okBtn, JButton cancelBtn) {
+    public EditBoxProperties(JFrame frame, JTextField idInput, JTextField nameInput, JComboBox listOfFindID, JComboBox listOfMajor, JButton okBtn, JButton cancelBtn,JButton findBtn ) {
         this.frame = frame;
         this.idInput = idInput;
         this.nameInput = nameInput;
@@ -22,6 +23,7 @@ public class EditBoxProperties {
         this.listOfMajor = listOfMajor;
         this.okBtn = okBtn;
         this.cancelBtn = cancelBtn;
+        this.findBtn = findBtn;
     }
 
 
@@ -51,5 +53,9 @@ public class EditBoxProperties {
 
     public JButton getCancelBtn() {
         return cancelBtn;
+    }
+
+    public JButton getFindBtn() {
+        return findBtn;
     }
 }
