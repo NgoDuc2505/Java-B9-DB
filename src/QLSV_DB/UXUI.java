@@ -322,7 +322,7 @@ public class UXUI {
         editUI.getCancelBtn().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("cancellllllll");
+                editUI.getFrame().setVisible(false);
             }
         });
     }
@@ -337,6 +337,16 @@ public class UXUI {
                 Student getStu = new Student(idInput,nameInput,majorGetter);
                 System.out.println(getStu.toString());
                 addStudentToDB(getStu);
+            }
+        });
+    }
+
+
+    private static void delOnclick(){
+        btnList.get(2).addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DeleteSearchBox.renderAll();
             }
         });
     }
@@ -415,6 +425,7 @@ public class UXUI {
         getDataFRomDB();
         addOnClick();
         editStudentOnclick();
+        delOnclick();
     }
 
     public static void main(String[] args) {
